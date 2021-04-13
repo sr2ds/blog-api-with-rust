@@ -1,5 +1,7 @@
-use actix_web::{web, guard, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web, guard, App, HttpResponse, HttpServer, Responder};
+use mongodb::{options::ClientOptions, Client};
 
+use std::sync::*;
 mod db;
 mod articles;
 
@@ -8,16 +10,28 @@ async fn p404() -> impl Responder {
     HttpResponse::BadRequest().body("Bad data")
 }
 
+#[get("/")]
+async fn index() -> impl Responder {
+    HttpResponse::Ok().body("Hello!!")
+}
+
 /**
  * Função main com init do http server
  * @todo -> Agrupar rotas como resource
+ * @todo -> dotenv
  */
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
+    let mut client_options = ClientOptions::parse("mongodb://localhost:27017").await.unwrap();
+    client_options.app_name = Some("blog".to_string());
+    let client = web::Data::new(Mutex::new(Client::with_options(client_options).unwrap()));
+    // println!("{}", client);
+
+    HttpServer::new(move || {
         App::new()
-            .service(articles::index)
+            .app_data(client.clone())
+            .service(index)
             .service(articles::articles_index)
             .service(articles::article_store)
             .service(articles::article_show)
