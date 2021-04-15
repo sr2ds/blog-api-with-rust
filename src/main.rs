@@ -12,7 +12,7 @@ async fn p404() -> impl Responder {
 
 #[get("/")]
 async fn index() -> impl Responder {
-    HttpResponse::Ok().body("Hello!!")
+    HttpResponse::Ok().body("Hello!")
 }
 
 /**
