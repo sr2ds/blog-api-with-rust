@@ -7,9 +7,8 @@ O objetivo primário é compreender como o framework funciona e por em prática 
 
 ## Todo
 
-1. Update/PUT method;
-2. Model;
-3. Dockerize
+1. Model;
+2. Dockerize
 
 ### Cadastrar Artigo
 

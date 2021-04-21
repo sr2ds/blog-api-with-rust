@@ -10,17 +10,14 @@ use bson::Bson;
 const MONGO_DB: &'static str = "blog";
 const MONGO_COLLECTION_ARTICLES: &'static str = "articles";
 
-use crate::articles::{Article, ArticleRequest};
+use crate::articles::{Article, ArticleUpdateRequest, ArticleRequest};
 
 /**
  * Operações básicas do CRUD Articles
- * @todo -> Update
- * @todo -> criar model
- * @todo -> dotenv: db e collection
-*/
+ */
 
 #[get("/articles")]
-pub async fn articles_index(data: web::Data<Mutex<Client>>) -> impl Responder {
+pub async fn index(data: web::Data<Mutex<Client>>) -> impl Responder {
     let collection = data
         .lock()
         .unwrap()
@@ -46,14 +43,14 @@ pub async fn articles_index(data: web::Data<Mutex<Client>>) -> impl Responder {
 }
 
 #[post("/articles")]
-pub async fn article_store(data: web::Data<Mutex<Client>>, new_article: web::Json<ArticleRequest>) -> impl Responder {
+pub async fn store(data: web::Data<Mutex<Client>>, article: web::Json<ArticleRequest>) -> impl Responder {
     let collection = data
         .lock()
         .unwrap()
         .database(MONGO_DB)
         .collection(MONGO_COLLECTION_ARTICLES);
 
-    let doc = doc! {"author": &new_article.author, "created_at": &new_article.created_at, "title": &new_article.title, "content": &new_article.content};
+    let doc = doc! {"author": &article.author, "created_at": &article.created_at, "title": &article.title, "content": &article.content};
 
     match collection.insert_one(doc, None).await {
         Ok(db_result) => {
@@ -70,7 +67,7 @@ pub async fn article_store(data: web::Data<Mutex<Client>>, new_article: web::Jso
 }
 
 #[get("/articles/{id}")]
-pub async fn article_show(data: web::Data<Mutex<Client>>, id: web::Path<String>) -> impl Responder {
+pub async fn show(data: web::Data<Mutex<Client>>, id: web::Path<String>) -> impl Responder {
     let collection = data
     .lock()
     .unwrap()
@@ -84,7 +81,7 @@ pub async fn article_show(data: web::Data<Mutex<Client>>, id: web::Path<String>)
 }
 
 #[delete("/articles/{id}")]
-pub async fn article_remove(data: web::Data<Mutex<Client>>, id: web::Path<String>) -> impl Responder {
+pub async fn remove(data: web::Data<Mutex<Client>>, id: web::Path<String>) -> impl Responder {
     let collection = data
     .lock()
     .unwrap()
@@ -97,24 +94,28 @@ pub async fn article_remove(data: web::Data<Mutex<Client>>, id: web::Path<String
     }
 }
 
-// #[put("/articles/{id}")]
-// pub async fn article_update(data: web::Data<Mutex<Client>>, id: web::Path<String>, new_article: web::Json<NewArticle>) -> impl Responder {
-//     // let collection = data
-//     // .lock()
-//     // .unwrap()
-//     // .database(MONGO_DB)
-//     // .collection(MONGO_COLLECTION_ARTICLES);
+// @todo -> Conseguir pegar o path junto com o body, só consegui pegar um dos dois
+#[put("/articles/{id}")]
+pub async fn update(data: web::Data<Mutex<Client>>, article: web::Json<ArticleUpdateRequest>) -> impl Responder {
+    let collection = data
+    .lock()
+    .unwrap()
+    .database(MONGO_DB)
+    .collection(MONGO_COLLECTION_ARTICLES);
 
-//     // match collection.delete_one(doc! { "_id": Bson::ObjectId(ObjectId::with_string(&id).unwrap()) }, None).await {
-//     //     Ok(art) => HttpResponse::Ok().json(art),
-//     //     Err(_err) => HttpResponse::InternalServerError().finish()
-//     // }
-// }
+    let update = doc!{"$set": doc! {"author": &article.author, "created_at": &article.created_at, "title": &article.title, "content": &article.content}};
+    let query = doc! { "_id": Bson::ObjectId(ObjectId::with_string(&article._id).unwrap()) };
 
-// usado para criar os services das rotas lá no main
+    match collection.update_one(query, update, None).await {
+        Ok(art) => HttpResponse::Ok().json(art),
+        Err(_err) => HttpResponse::InternalServerError().finish()
+    }
+}
+
 pub fn init(cfg: &mut web::ServiceConfig) {
-    cfg.service(articles_index);
-    cfg.service(article_store);
-    cfg.service(article_show);
-    cfg.service(article_remove);
+    cfg.service(index);
+    cfg.service(store);
+    cfg.service(show);
+    cfg.service(remove);
+    cfg.service(update);
 }
