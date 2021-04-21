@@ -79,34 +79,29 @@ pub async fn article_store(data: web::Data<Mutex<Client>>, new_article: web::Jso
 }
 
 #[get("/articles/{id}")]
-pub async fn article_show(data: web::Data<Mutex<Client>>, id: web::Path<(String,)>) -> impl Responder {
-    
+pub async fn article_show(data: web::Data<Mutex<Client>>, id: web::Path<String>) -> impl Responder {
     let collection = data
     .lock()
     .unwrap()
     .database(MONGO_DB)
     .collection(MONGO_COLLECTION_ARTICLES);
-    
-    // // let article = collection.find_one(doc! { "_id": Bson::ObjectId(ObjectId::with_string("6078951e00c0d4aa00ea9350").unwrap()) }, None).await;
-    // // let body = serde_json::to_string(&article).unwrap();
 
-    // HttpResponse::Created().json(body)
-    HttpResponse::Ok().body("Hello!!")
+    match collection.find_one(doc! { "_id": Bson::ObjectId(ObjectId::with_string(&id).unwrap()) }, None).await {
+        Ok(art) => HttpResponse::Ok().json(art),
+        Err(_err) => HttpResponse::InternalServerError().finish()
+    }
 }
 
 #[get("/articles/{id}/remove")]
-pub async fn article_remove(data: web::Data<Mutex<Client>>, id: web::Path<(String,)>) -> impl Responder {
+pub async fn article_remove(data: web::Data<Mutex<Client>>, id: web::Path<String>) -> impl Responder {
+    let collection = data
+    .lock()
+    .unwrap()
+    .database(MONGO_DB)
+    .collection(MONGO_COLLECTION_ARTICLES);
 
-    // let collection = data
-    // .lock()
-    // .unwrap()
-    // .database(MONGO_DB)
-    // .collection(MONGO_COLLECTION_ARTICLES);
-    
-    // let article = collection.remove(doc! { "_id": Bson::ObjectId(ObjectId::with_string("6078951e00c0d4aa00ea9350").unwrap()) }, None).await;
-    // let body = serde_json::to_string(&article).unwrap();
-
-    // HttpResponse::Ok().body(format!("Remover o artigo: {}", id.into_inner().0))
-    HttpResponse::Ok().body("Hello!!")
-
+    match collection.delete_one(doc! { "_id": Bson::ObjectId(ObjectId::with_string(&id).unwrap()) }, None).await {
+        Ok(art) => HttpResponse::Ok().json(art),
+        Err(_err) => HttpResponse::InternalServerError().finish()
+    }
 }
