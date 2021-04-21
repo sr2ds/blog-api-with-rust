@@ -1,9 +1,9 @@
-use actix_web::{get, web, guard, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, guard, web, App, HttpResponse, HttpServer, Responder};
 use mongodb::{options::ClientOptions, Client};
 
-use std::sync::*;
 use dotenv::dotenv;
 use std::env;
+use std::sync::*;
 
 mod articles;
 
@@ -19,7 +19,6 @@ async fn index() -> impl Responder {
 
 /**
  * Função main com init do http server
- * @todo -> Agrupar rotas como resource
  */
 
 #[actix_web::main]
@@ -38,10 +37,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(client.clone())
             .service(index)
-            .service(articles::articles_index)
-            .service(articles::article_store)
-            .service(articles::article_show)
-            .service(articles::article_remove)
+            .configure(articles::init)
             .default_service(
                 // 404 for GET request
                 web::resource("")
