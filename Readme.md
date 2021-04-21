@@ -7,8 +7,8 @@ O objetivo primário é compreender como o framework funciona e por em prática 
 
 ## Todo
 
-1. Crud Article;
-2. Refactor Crud -> Improve/Organize;
+1. Update/PUT method;
+2. Model;
 3. Dockerize
 
 ### Cadastrar Artigo

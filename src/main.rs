@@ -2,7 +2,9 @@ use actix_web::{get, web, guard, App, HttpResponse, HttpServer, Responder};
 use mongodb::{options::ClientOptions, Client};
 
 use std::sync::*;
-mod db;
+use dotenv::dotenv;
+use std::env;
+
 mod articles;
 
 /// 404 handler
@@ -18,15 +20,19 @@ async fn index() -> impl Responder {
 /**
  * Função main com init do http server
  * @todo -> Agrupar rotas como resource
- * @todo -> dotenv
  */
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let mut client_options = ClientOptions::parse("mongodb://localhost:27017").await.unwrap();
+    dotenv().ok();
+
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
+    let host = env::var("HOST").expect("HOST is not set in .env file");
+    let port = env::var("PORT").expect("PORT is not set in .env file");
+
+    let mut client_options = ClientOptions::parse(&database_url).await.unwrap();
     client_options.app_name = Some("blog".to_string());
     let client = web::Data::new(Mutex::new(Client::with_options(client_options).unwrap()));
-    // println!("{}", client);
 
     HttpServer::new(move || {
         App::new()
@@ -48,7 +54,7 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
     })
-    .bind("127.0.0.1:8080")?
+    .bind(format!("{}:{}", host, port))?
     .run()
     .await
 }

@@ -1,4 +1,4 @@
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{get, post, put, delete, web, HttpResponse, Responder};
 use bson::doc;
 use futures::stream::StreamExt;
 use mongodb::{options::FindOptions, Client, bson};
@@ -9,7 +9,6 @@ use bson::Bson;
 
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::{Result, Value};
 
 const MONGO_DB: &'static str = "blog";
 const MONGO_COLLECTION_ARTICLES: &'static str = "articles";
@@ -25,11 +24,14 @@ pub struct NewArticle {
 
 /**
  * Operações básicas do CRUD Articles
- * @todo -> Separar lógicas de DB
+ * @todo -> Update
+ * @todo -> criar model
+ * @todo -> dotenv: db e collection
 */
 
 #[get("/articles")]
 pub async fn articles_index(data: web::Data<Mutex<Client>>) -> impl Responder {
+    
     let collection = data
         .lock()
         .unwrap()
@@ -92,7 +94,7 @@ pub async fn article_show(data: web::Data<Mutex<Client>>, id: web::Path<String>)
     }
 }
 
-#[get("/articles/{id}/remove")]
+#[delete("/articles/{id}")]
 pub async fn article_remove(data: web::Data<Mutex<Client>>, id: web::Path<String>) -> impl Responder {
     let collection = data
     .lock()
@@ -105,3 +107,17 @@ pub async fn article_remove(data: web::Data<Mutex<Client>>, id: web::Path<String
         Err(_err) => HttpResponse::InternalServerError().finish()
     }
 }
+
+// #[put("/articles/{id}")]
+// pub async fn article_update(data: web::Data<Mutex<Client>>, id: web::Path<String>, new_article: web::Json<NewArticle>) -> impl Responder {
+//     // let collection = data
+//     // .lock()
+//     // .unwrap()
+//     // .database(MONGO_DB)
+//     // .collection(MONGO_COLLECTION_ARTICLES);
+
+//     // match collection.delete_one(doc! { "_id": Bson::ObjectId(ObjectId::with_string(&id).unwrap()) }, None).await {
+//     //     Ok(art) => HttpResponse::Ok().json(art),
+//     //     Err(_err) => HttpResponse::InternalServerError().finish()
+//     // }
+// }
