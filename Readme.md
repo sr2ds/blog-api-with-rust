@@ -2,9 +2,13 @@
 
 This Repository is only one practice project with Rust Language. I'm use Actix Web Framework and MongoDB.
 
+MongoDB ODM: https://crates.io/crates/wither
+
+Actix Web: https://actix.rs/
+
 ## Todo
 
-1. Refactoring in progress with crate //https://crates.io/crates/wither
+1. Refactoring in progress with crate winther
 
 ### Store one article
 
