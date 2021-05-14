@@ -1,16 +1,12 @@
-# Blog API - With Rust - Actix
+# Blog API - Writing in Rust with Actix Web
 
-Esta projeto é apenas para fins de testes e estudos e o contexto é a implementação de uma simples api desenvolvido com Rust no framework web Actix.
-
-O objetivo primário é compreender como o framework funciona e por em prática a sintaxe do Rust.
-
+This Repository is only one practice project with Rust Language. I'm use Actix Web Framework and MongoDB.
 
 ## Todo
 
-1. Model;
-2. Dockerize
+1. Refactoring in progress with crate //https://crates.io/crates/wither
 
-### Cadastrar Artigo
+### Store one article
 
 ```sh
  curl -X POST --header "Content-Type: application/json" --data \
