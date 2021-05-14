@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::articles::{Article};
 
-// @todo -> Aprender a unificar ArticleRequest e ArticleUpdateRequest
+// @todo -> How to unify struct ArticleRequest with ArticleUpdateRequest
 #[derive(Serialize, Deserialize)]
 pub struct ArticleRequest {
     pub author: String,
