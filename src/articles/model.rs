@@ -1,10 +1,10 @@
 /**
 * Article Model
 * This is only a sample but I think that additional rules (like _all,_create,etc) are be better in one repository
-* @todo -> Refector _create, _update and _delete methods
+* @todo -> Refector _update and _delete methods
 */
 
-pub mod Article {
+pub mod article {
   use std::env;
   
   use futures::stream::StreamExt;
@@ -12,6 +12,7 @@ pub mod Article {
   use wither::bson::{doc, oid::ObjectId};
   use wither::mongodb::Client;
   use wither::{prelude::*, Result};
+  use actix_web::{web};
   
   const MONGO_DB: &'static str = "blog";
   
@@ -57,16 +58,26 @@ pub mod Article {
     Ok(doc)
   }
 
-  pub async fn _create(article: bson::Document) -> Result<ArticleModel> {
+
+  // @todo -> How to unify struct ArticleRequest with ArticleUpdateRequest
+  #[derive(Serialize, Deserialize)]
+  pub struct ArticleRequest {
+      pub author: String,
+      pub title: String,
+      pub content: String,
+      pub created_at: String,
+  }
+
+  pub async fn _create(_article: web::Json<ArticleRequest>) -> Result<ArticleModel> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
     let db = Client::with_uri_str(&database_url).await?.database(MONGO_DB);
     
     let mut to_save = ArticleModel {
       id: None,
-      author: String::from("sample data"),
-      created_at: String::from("sample data"),
-      title: String::from("sample data"),
-      content: String::from("sample data"),
+      author: _article.author.clone(),
+      created_at: _article.created_at.clone(),
+      title: _article.title.clone(),
+      content: _article.content.clone(),
     };
     
     to_save.save(&db, None).await?;
@@ -74,7 +85,7 @@ pub mod Article {
     Ok(to_save)
   }
   
-  pub async fn _update(article: bson::Document, query: bson::Document) -> Result<Option<ArticleModel>> {
+  pub async fn _update(_article: bson::Document, query: bson::Document) -> Result<Option<ArticleModel>> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
     let db = Client::with_uri_str(&database_url).await?.database(MONGO_DB);
     

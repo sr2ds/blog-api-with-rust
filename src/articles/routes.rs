@@ -4,16 +4,7 @@ use mongodb::{bson};
 use bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 
-use crate::articles::{Article};
-
-// @todo -> How to unify struct ArticleRequest with ArticleUpdateRequest
-#[derive(Serialize, Deserialize)]
-pub struct ArticleRequest {
-    pub author: String,
-    pub title: String,
-    pub content: String,
-    pub created_at: String,
-}
+use crate::articles::{article};
 
 #[derive(Serialize, Deserialize)]
 pub struct ArticleUpdateRequest {
@@ -27,12 +18,12 @@ pub struct ArticleUpdateRequest {
 
 /**
 * Crud Basic Operations
-* @todo -> refactor store, remove and update methods
+* @todo -> refactor remove and update methods
 */
 
 #[get("/articles")]
 pub async fn index() -> impl Responder {
-    let articles = Article::_all().await;
+    let articles = article::_all().await;
     
     match articles {
         Ok(articles) => HttpResponse::Ok().json(articles),
@@ -43,7 +34,7 @@ pub async fn index() -> impl Responder {
 #[get("/articles/{id}")]
 pub async fn show(id: web::Path<String>) -> impl Responder {
     let object_id = ObjectId::with_string(&id).unwrap();
-    let article = Article::_get_one(doc! { "_id": object_id }).await;
+    let article = article::_get_one(doc! { "_id": object_id }).await;
     
     match article {
         Ok(article) => HttpResponse::Ok().json(article),
@@ -52,9 +43,8 @@ pub async fn show(id: web::Path<String>) -> impl Responder {
 }
 
 #[post("/articles")]
-pub async fn store(article: web::Json<ArticleRequest>) -> impl Responder {
-    let doc = doc! {"author": &article.author, "created_at": &article.created_at, "title": &article.title, "content": &article.content};
-    let stored = Article::_create(doc).await;
+pub async fn store(article: web::Json<article::ArticleRequest>) -> impl Responder {
+    let stored = article::_create(article).await;
     
     match stored {
         Ok(stored) => HttpResponse::Ok().json(stored),
@@ -65,7 +55,7 @@ pub async fn store(article: web::Json<ArticleRequest>) -> impl Responder {
 #[delete("/articles/{id}")]
 pub async fn remove(id: web::Path<String>) -> impl Responder {
     let object_id = ObjectId::with_string(&id).unwrap();
-    let deleted = Article::_delete(doc! { "_id": object_id }).await;
+    let deleted = article::_delete(doc! { "_id": object_id }).await;
     
     match deleted {
         Ok(deleted) => HttpResponse::Ok().json(deleted),
@@ -78,7 +68,7 @@ pub async fn remove(id: web::Path<String>) -> impl Responder {
 pub async fn update(article: web::Json<ArticleUpdateRequest>) -> impl Responder {
     let doc = doc!{"$set": doc! {"author": &article.author, "created_at": &article.created_at, "title": &article.title, "content": &article.content}};
     let object_id = ObjectId::with_string(&article._id).unwrap();
-    let updated = Article::_update(doc, doc! { "_id": object_id }).await;
+    let updated = article::_update(doc, doc! { "_id": object_id }).await;
     
     match updated {
         Ok(updated) => HttpResponse::Ok().json(updated),
