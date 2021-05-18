@@ -2,23 +2,11 @@ use actix_web::{get, post, put, delete, web, HttpResponse, Responder};
 use bson::doc;
 use mongodb::{bson};
 use bson::oid::ObjectId;
-use serde::{Deserialize, Serialize};
 
 use crate::articles::{article};
 
-#[derive(Serialize, Deserialize)]
-pub struct ArticleUpdateRequest {
-    #[serde(rename = "_id")]
-    pub _id: String,
-    pub author: String,
-    pub title: String,
-    pub content: String,
-    pub created_at: String,
-}
-
 /**
 * Crud Basic Operations
-* @todo -> refactor remove and update methods
 */
 
 #[get("/articles")]
@@ -54,21 +42,21 @@ pub async fn store(article: web::Json<article::ArticleRequest>) -> impl Responde
 
 #[delete("/articles/{id}")]
 pub async fn remove(id: web::Path<String>) -> impl Responder {
-    let object_id = ObjectId::with_string(&id).unwrap();
-    let deleted = article::_delete(doc! { "_id": object_id }).await;
-    
+    let object_id = match ObjectId::with_string(&id) {
+        Ok(obj) => obj,
+        Err(_) => ObjectId::with_string("").unwrap() // This is bad code -> need improve
+    };
+
+    let deleted = article::_delete(object_id).await;
     match deleted {
         Ok(deleted) => HttpResponse::Ok().json(deleted),
         _ => HttpResponse::InternalServerError().finish()
     }
 }
 
-// @todo -> Conseguir pegar o path junto com o body, só consegui pegar um dos dois
 #[put("/articles/{id}")]
-pub async fn update(article: web::Json<ArticleUpdateRequest>) -> impl Responder {
-    let doc = doc!{"$set": doc! {"author": &article.author, "created_at": &article.created_at, "title": &article.title, "content": &article.content}};
-    let object_id = ObjectId::with_string(&article._id).unwrap();
-    let updated = article::_update(doc, doc! { "_id": object_id }).await;
+pub async fn update(article: web::Json<article::ArticleUpdateRequest>) -> impl Responder {
+    let updated = article::_update(article).await;
     
     match updated {
         Ok(updated) => HttpResponse::Ok().json(updated),
