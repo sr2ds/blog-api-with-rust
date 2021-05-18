@@ -6,9 +6,7 @@ MongoDB ODM: https://crates.io/crates/wither
 
 Actix Web: https://actix.rs/
 
-## Todo
-
-1. Refactoring in progress with crate winther
+The CRUD operator is full work for articles, the routes have resource pattern with Restfull methods GET POST PUT DELETE.
 
 ### Store one article
 
@@ -17,7 +15,6 @@ Actix Web: https://actix.rs/
     '{"author":"David","title":"Rust Blog Article","created_at":"2021-04-15","content":"blank"}' \
     http://localhost:8080/articles
 ```
-
 ## Setup Dev
 
 ## MongoDB - Docker Container
