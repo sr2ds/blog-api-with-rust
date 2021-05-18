@@ -1,7 +1,6 @@
 /**
 * Article Model
 * This is only a sample but I think that additional rules (like _all,_create,etc) are be better in one repository
-* @todo -> Refector _update and _delete methods
 */
 
 pub mod article {
@@ -72,7 +71,6 @@ pub mod article {
     let db = Client::with_uri_str(&database_url).await?.database(MONGO_DB);
     
     let doc = ArticleModel::find_one(&db, query, None).await?;
-    println!("{:?}", doc);
     
     Ok(doc)
   }
